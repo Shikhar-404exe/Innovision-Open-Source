@@ -107,10 +107,14 @@ export default function ProfilePage() {
   };
 
   async function fetchUser() {
-    const res = await fetch("/api/getuser");
-    const data = await res.json();
-    if (res.ok) {
-      setUserData(data);
+    try {
+      const res = await fetch("/api/getuser");
+      if (res.ok) {
+        const data = await res.json();
+        setUserData(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch user:", error);
     }
   }
 
@@ -136,23 +140,35 @@ export default function ProfilePage() {
 
   async function fetchRoadmaps() {
     setLoading(true);
-    const res = await fetch("/api/roadmap/all");
-    const data = await res.json();
-    const diffLevel = data.difficultyArray;
-    let docs = data.docs.length > 4 ? data.docs.slice(0, 4) : data.docs;
-    docs = docs.filter((e) => e.process === "completed");
-    const completed = data.docs.filter((roadmap) => roadmap.completed) || [];
-    setCompletedRoadmaps(completed);
-    setDifficultyLevel(diffLevel);
-    setRecentRoadmaps(docs);
-    setLoading(false);
+    try {
+      const res = await fetch("/api/roadmap/all");
+      if (!res.ok) throw new Error("Failed to fetch roadmaps");
+      const data = await res.json();
+      const diffLevel = data?.difficultyArray || [];
+      let docs = data?.docs || [];
+      docs = docs.length > 4 ? docs.slice(0, 4) : docs;
+      docs = docs.filter((e) => e.process === "completed");
+      const completed = (data?.docs || []).filter((roadmap) => roadmap.completed);
+      setCompletedRoadmaps(completed);
+      setDifficultyLevel(diffLevel);
+      setRecentRoadmaps(docs);
+    } catch (error) {
+      console.error("Failed to fetch roadmaps:", error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function fetchRank() {
-    const res = await fetch("/api/getrank");
-    const data = await res.json();
-    setRank(data.rank);
-    setLeaderboard(data.leaderboard);
+    try {
+      const res = await fetch("/api/getrank");
+      if (!res.ok) throw new Error("Failed to fetch rank");
+      const data = await res.json();
+      setRank(data?.rank || 0);
+      setLeaderboard(data?.leaderboard || []);
+    } catch (error) {
+      console.error("Failed to fetch rank:", error);
+    }
   }
 
   if (!user) {
