@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Clock, BookOpen, CheckCircle2 } from "lucide-react";
+import { Clock, BookOpen, CheckCircle2, History } from "lucide-react";
 import { calculateEstimatedTime } from "@/lib/time-utils";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -10,8 +10,26 @@ import DeleteRoadmap from "./DeleteRoadmap";
 import ArchiveCourse from "./ArchiveCourse";
 import DuplicateCourse from "./DuplicateCourse";
 
+const getRelativeTime = (dateString) => {
+  if (!dateString) return null;
+  const now = new Date();
+  const date = new Date(dateString);
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return "Just now";
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
+  return `${Math.floor(diffDays / 30)}mo ago`;
+};
+
 const CourseCard = ({ course, onDelete, onArchive, isSelectable, isSelected, onSelect }) => {
-  const { id, courseTitle, courseDescription, chapterCount, difficulty, chapters, archived } = course;
+  const { id, courseTitle, courseDescription, chapterCount, difficulty, chapters, archived, lastAccessedAt } = course;
+  const lastAccessedText = getRelativeTime(lastAccessedAt);
 
   // Calculate progress percentage
   const calculateProgress = () => {
@@ -113,6 +131,12 @@ const CourseCard = ({ course, onDelete, onArchive, isSelectable, isSelected, onS
         <CardDescription className="line-clamp-2 text-sm">
           {courseDescription}
         </CardDescription>
+        {lastAccessedText && progress > 0 && progress < 100 && (
+          <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
+            <History className="h-3 w-3" />
+            <span>Last accessed {lastAccessedText}</span>
+          </div>
+        )}
       </CardHeader>
 
       <CardContent className="space-y-3">

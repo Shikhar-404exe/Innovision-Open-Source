@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState, useContext } from "react";
-import { CircleCheckIcon, Clock, Copy } from "lucide-react";
+import { CircleCheckIcon, Clock, Copy, ArrowRight } from "lucide-react";
 import xpContext from "@/contexts/xp";
 import { useAuth } from "@/contexts/auth";
 import { calculateEstimatedTime } from "@/lib/time-utils";
@@ -22,6 +22,11 @@ function Roadmap({ roadMap, id }) {
 
   // Calculate estimated time
   const estimatedTime = calculateEstimatedTime(roadMap.chapters.length, roadMap.difficulty);
+
+  // Find first uncompleted chapter for resume
+  const firstUncompletedIndex = roadMap.chapters?.findIndex((ch) => !ch.completed);
+  const resumeChapter =
+    firstUncompletedIndex >= 0 ? firstUncompletedIndex + 1 : roadMap.chapters?.length || 1;
 
   useEffect(() => {
     function updateHeight() {
@@ -90,6 +95,12 @@ function Roadmap({ roadMap, id }) {
 
           {/* Action Buttons */}
           <div className="flex gap-2 shrink-0">
+            <Link href={`/chapter-test/${id}/${resumeChapter}`}>
+              <Button size="sm" className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white">
+                <ArrowRight className="h-4 w-4" />
+                Resume
+              </Button>
+            </Link>
             <ExportCourse
               courseId={id}
               courseTitle={roadMap.courseTitle}

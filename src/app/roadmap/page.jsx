@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, BookOpen, Sparkles, Search, X, Filter, Trash2, Archive, ArchiveRestore, CheckSquare } from "lucide-react";
 import CourseCard from "@/components/Home/CourseCard";
+import ContinueLearning from "@/components/Home/ContinueLearning";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -126,8 +127,11 @@ export default function page() {
             return matchesSearch && matchesDifficulty;
         })
         .sort((a, b) => {
-            // Sort logic
-            if (sortBy === "newest") {
+            if (sortBy === "recent") {
+                const aTime = a.lastAccessedAt ? new Date(a.lastAccessedAt).getTime() : 0;
+                const bTime = b.lastAccessedAt ? new Date(b.lastAccessedAt).getTime() : 0;
+                return bTime - aTime;
+            } else if (sortBy === "newest") {
                 return new Date(b.createdAt) - new Date(a.createdAt);
             } else if (sortBy === "oldest") {
                 return new Date(a.createdAt) - new Date(b.createdAt);
@@ -244,6 +248,10 @@ export default function page() {
                     <div className="w-full max-w-4xl">
                         <DailyQuests userId={user.email} />
                     </div>
+                )}
+
+                {!loading && !error && completedCourses.length > 0 && (
+                    <ContinueLearning courses={completedCourses} />
                 )}
 
                 {/* Search and Filter Section */}
@@ -389,10 +397,11 @@ export default function page() {
 
                             {/* Sort By */}
                             <Select value={sortBy} onValueChange={setSortBy}>
-                                <SelectTrigger className="w-40 h-9 bg-card/50 backdrop-blur-sm border-border/50">
+                                <SelectTrigger className="w-44 h-9 bg-card/50 backdrop-blur-sm border-border/50">
                                     <SelectValue placeholder="Sort by" />
                                 </SelectTrigger>
                                 <SelectContent>
+                                    <SelectItem value="recent">Recently Accessed</SelectItem>
                                     <SelectItem value="newest">Newest First</SelectItem>
                                     <SelectItem value="oldest">Oldest First</SelectItem>
                                     <SelectItem value="title">Title (A-Z)</SelectItem>

@@ -312,6 +312,18 @@ const Page = ({ chapter, roadmapId }) => {
         hideLoader();
     }, []);
 
+    // Track progress when chapter content loads
+    useEffect(() => {
+        if (chapterData && roadmapId) {
+            const chapterIndex = Number(chapter) - 1;
+            fetch(`/api/roadmap/${roadmapId}/progress`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ lastAccessedChapter: chapterIndex }),
+            }).catch(() => {});
+        }
+    }, [chapterData, roadmapId, chapter]);
+
     if (isLoading) {
         return (
             <ChapterLoading
